@@ -1,3 +1,5 @@
+package bowling
+
 trait AdditionBonus
 
 case object AddOnce extends AdditionBonus

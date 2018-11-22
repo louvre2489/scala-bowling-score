@@ -1,3 +1,5 @@
+package bowling
+
 import org.scalatest.FlatSpec
 
 /**
