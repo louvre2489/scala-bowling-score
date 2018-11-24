@@ -42,34 +42,34 @@ package object bowling {
 
   /**
     * Get Character
-    * @param throwingResult result of th throwing
+    * @param result result of th throwing
     * @param time throwing time
     * @return
     */
-  def getChar(throwingResult: String, time: Int): String =
-    throwingResult.charAt(time - 1).toString
+  def getChar(result: String, time: Int): String =
+    result.charAt(time - 1).toString
 
   /**
     * Check the frame is Strike
-    * @param throwingResult the field to check, return true when the result is Strike
+    * @param result the field to check, return true when the result is Strike
     * @return true if the result is Strike, false if not
     */
-  def isStrike(throwingResult: String): Boolean =
-    throwingResult == STRIKE_SIGN
+  def isStrike(result: String): Boolean =
+    result == STRIKE_SIGN
 
   /**
     * Check the frame is Spare
-    * @param throwingResult the field to check, return true when the result is Spare
+    * @param result the field to check, return true when the result is Spare
     * @return true if the result is Spare, false if not
     */
-  def isSpare(throwingResult: String): Boolean =
-    throwingResult.length >= 2 && getChar(throwingResult, SECOND_THROW) == SPARE_SIGN
+  def isSpare(result: String): Boolean =
+    result.length >= 2 && getChar(result, SECOND_THROW) == SPARE_SIGN
 
   /**
     * Check the frame is Gutter
-    * @param throwingResult the field to check, return true when the result is Gutter
+    * @param result the field to check, return true when the result is Gutter
     * @return true if the result is Gutter, false if not
     */
-  def isGutter(throwingResult: String): Boolean =
-    throwingResult == GUTTER_SIGN
+  def isGutter(result: String): Boolean =
+    result == GUTTER_SIGN
 }

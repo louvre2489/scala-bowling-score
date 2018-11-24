@@ -23,7 +23,8 @@ case class BowlingScoreSheet(str: String) {
   /**
     * Bonus point
     */
-  val bonusBallResult: Option[BonusBall] = BonusBall.bonusBallResult(normalAndBonusGames)
+  val bonusBallResult: Option[BonusBall] =
+    BonusBall.bonusBallResult(normalAndBonusGames)
 
   /**
     * calculate th bowling score
@@ -31,16 +32,20 @@ case class BowlingScoreSheet(str: String) {
     */
   def calcScore(): Int = {
 
-    def calculateBonusPoint(restAdditionRights: List[AdditionBonus]): Int =
+    /**
+      * calculate the bonus point
+      * @param addList rest of the addition right
+      * @return bonus point
+      */
+    def calculateBonusPoint(addList: List[AdditionBonus]): Int =
       bonusBallResult match {
         case Some(bonusBall) =>
           bonusBall match {
             case strikeBonus: StrikeBonusBall =>
-
               // the first throw
               val firstPoint = strikeBonus.firstPoint
               val (_, firstAdditionalPoint) =
-                plusAdditionalPoint(restAdditionRights, firstPoint)
+                plusAdditionalPoint(addList, firstPoint)
 
               // the second throw
               val secondPoint = strikeBonus.secondPoint
@@ -52,40 +57,58 @@ case class BowlingScoreSheet(str: String) {
             case spareBonus: SpareBonusBall =>
               val firstPoint = spareBonus.firstPoint
               val (_, firstAdditionalPoint) =
-                plusAdditionalPoint(restAdditionRights, firstPoint)
+                plusAdditionalPoint(addList, firstPoint)
 
               MAX_POINT + firstAdditionalPoint
           }
         case _ => 0
       }
 
-    def plusAdditionalPoint(l: List[AdditionBonus],
-                            p: Int): (List[AdditionBonus], Int) =
-      l.foldLeft((Nil: List[AdditionBonus], ZERO_POINT)) {
+    /**
+      * calculate additional point
+      * In case of Strike, we can add point at next two times
+      * In case of Spare, we can add at next time
+      * @param addList rest of the addition right
+      * @param point point
+      * @return the result point of the calculation
+      */
+    def plusAdditionalPoint(addList: List[AdditionBonus],
+                            point: Int): (List[AdditionBonus], Int) =
+      addList.foldLeft((Nil: List[AdditionBonus], ZERO_POINT)) {
         (t: (List[AdditionBonus], Int), addition: AdditionBonus) =>
           addition match {
-            case AddOnce  => (t._1, t._2 + p)
-            case AddTwice => (t._1 :+ AddOnce, t._2 + p)
+            case AddOnce  => (t._1, t._2 + point)
+            case AddTwice => (t._1 :+ AddOnce, t._2 + point)
           }
       }
 
+    /**
+      * calculate point
+      * @param frames result of thie game
+      * @param point point
+      * @param rightList rest of the addition right
+      * @return the result point of the calculation
+      */
     @tailrec
     def go(frames: List[Frame],
-           score: Int,
+           point: Int,
            rightList: List[AdditionBonus]): (List[AdditionBonus], Int) =
       frames match {
         case Nil => plusAdditionalPoint(rightList, ZERO_POINT)
+
         case x :: Nil =>
           x match {
             // this is the last frame
             case Strike() =>
               val (additionalRights, additionalPoint) =
                 plusAdditionalPoint(rightList, MAX_POINT)
-              (additionalRights, score + MAX_POINT + additionalPoint)
+              (additionalRights, point + MAX_POINT + additionalPoint)
+
             case Spare(_) =>
               val (_, additionalPoint) =
                 plusAdditionalPoint(rightList, MAX_POINT)
-              (Nil, score + MAX_POINT + additionalPoint)
+              (Nil, point + MAX_POINT + additionalPoint)
+
             case Normal(m, n) =>
               // the first throw
               val (firstAdditionalRights, firstAdditionalPoint) =
@@ -94,8 +117,9 @@ case class BowlingScoreSheet(str: String) {
               val (secondAdditionalRights, secondAdditionalPoint) =
                 plusAdditionalPoint(firstAdditionalRights, n)
               (secondAdditionalRights,
-               score + m + n + firstAdditionalPoint + secondAdditionalPoint)
+               point + m + n + firstAdditionalPoint + secondAdditionalPoint)
           }
+
         case x :: xs =>
           x match {
             case Strike() =>
@@ -103,7 +127,7 @@ case class BowlingScoreSheet(str: String) {
                 plusAdditionalPoint(rightList, MAX_POINT)
               // calculate next frame
               go(xs,
-                 score + MAX_POINT + additionalPoint,
+                 point + MAX_POINT + additionalPoint,
                  additionalRights :+ AddTwice)
 
             case Spare(m) =>
@@ -116,7 +140,7 @@ case class BowlingScoreSheet(str: String) {
               // calculate next frame
               go(
                 xs,
-                score + MAX_POINT + firstAdditionalPoint + secondAdditionalPoint,
+                point + MAX_POINT + firstAdditionalPoint + secondAdditionalPoint,
                 AddOnce :: Nil)
 
             case Normal(m, n) =>
@@ -128,7 +152,7 @@ case class BowlingScoreSheet(str: String) {
                 plusAdditionalPoint(firstAdditionalRights, n)
               // calculate next frame
               go(xs,
-                 score + m + n + firstAdditionalPoint + secondAdditionalPoint,
+                 point + m + n + firstAdditionalPoint + secondAdditionalPoint,
                  secondAdditionalRights)
           }
       }
